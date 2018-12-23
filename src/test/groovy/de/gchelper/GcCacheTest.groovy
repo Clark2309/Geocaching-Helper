@@ -74,5 +74,14 @@ class GcCacheTest extends GroovyTestCase {
         myGc.coordsAddOffset(latOffset, lonOffset)
         assert "N48°44.979\'" == myGc.getCoordsLat()
         assert "E011°43.570\'" == myGc.getCoordsLon()
+
+        myGc = new GcCache(gcCode: "GC123", gcTitle: "mein Titel", gcDescription: "Desc", gcCoords: "N 48° 44.720' E 011° 43.640'")
+
+        latOffset =  259
+        lonOffset =  -70
+
+        myGc.coordsAddOffsetInt(latOffset, lonOffset)
+        assert "N48°44.979\'" == myGc.getCoordsLat()
+        assert "E011°43.570\'" == myGc.getCoordsLon()
     }
 }
