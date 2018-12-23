@@ -38,6 +38,7 @@ class GcCache {
 
     void coordsUpdate() {
         // recalculate other formats
+        // Must be calles after updating the degrees, minutes and minute decimals
         gcCoordsMap["latMinDec"] = gcCoordsMap["latMin"].toFloat() + gcCoordsMap["latDecMin"].toFloat() / 1000
         gcCoordsMap["latDecDeg"] = gcCoordsMap["latMinDec"] / 60
         gcCoordsMap["latSec"] = (gcCoordsMap["latDecMin"].toFloat() / 1000 * 60).round(3)
@@ -50,11 +51,13 @@ class GcCache {
         gcCoords = lat + lon
     }
 
+    // provides Latitude of actual coords
     String getCoordsLat() {
         def sep = gcCoords.findIndexOf{name -> name =~ /[EW]/}
         return gcCoords.substring(0,sep)
     }
 
+    // provides Longitude of actual coords
     String getCoordsLon() {
         def sep = gcCoords.findIndexOf{name -> name =~ /[EW]/}
         return gcCoords.substring(sep)
@@ -89,6 +92,35 @@ class GcCache {
         def lat = latOffset / 1000
         def lon = lonOffset / 1000
         coordsAddOffset(lat, lon)
+    }
+
+    void coordsProjection(dist, bear) {
+        def lat = gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]
+        def lon = gcCoordsMap["lonDeg"]+ gcCoordsMap["lonDecDeg"]
+
+        def latRad = Math.PI / 180 * lat
+        def lonRad = Math.PI / 180 * lon
+
+        bear = Math.PI / 180 * bear
+        dist = ( Math.PI * dist ) / ( 180 * 60 * 1852)
+        
+        def latCalc = Math.asin(Math.sin(latRad) * Math.cos(dist) + Math.cos(latRad) * Math.sin(dist) * Math.cos(bear))        
+        def polarRad = -1 * Math.atan2(Math.sin(bear) * Math.sin(dist) * Math.cos(latRad), Math.cos(dist) - Math.sin(latRad) * Math.sin(latCalc))
+        def lonCalc = (lonRad - polarRad + Math.PI) - Math.floor((lonRad - polarRad + Math.PI) / (2 * Math.PI)) - Math.PI
+
+        gcCoordsMap["latDeg"] = Math.floor(180 / Math.PI * latCalc).toInteger()
+        float latMin = ((180 / Math.PI * latCalc) - gcCoordsMap["latDeg"]) * 60
+        gcCoordsMap["latMin"] = Math.floor(latMin).toInteger()
+        latMin *= 1000
+        gcCoordsMap["latDecMin"] = Math.floor(latMin.mod(1000)).toInteger()
+
+        gcCoordsMap["lonDeg"] = Math.floor(180 / Math.PI * lonCalc).toInteger()
+        float lonMin = ((180 / Math.PI * lonCalc) - gcCoordsMap["lonDeg"]) * 60
+        gcCoordsMap["lonMin"] = Math.floor(lonMin).toInteger()
+        lonMin *= 1000
+        gcCoordsMap["lonDecMin"] = Math.floor(lonMin.mod(1000)).toInteger()
+
+        coordsUpdate()
     }
 
     private String toTwoDigits(c) {
