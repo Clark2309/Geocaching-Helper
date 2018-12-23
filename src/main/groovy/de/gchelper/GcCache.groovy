@@ -13,18 +13,12 @@ class GcCache {
         def cLon = c.substring(c.findIndexOf{name -> name =~ /[EW]/})
         def latDir = cLat.substring(0,1)
         def latDeg = cLat.substring(1, cLat.indexOf("°"))
-        latDeg = latDeg.size() < 2 ? "0" + latDeg : latDeg
         def latMin = cLat.substring(cLat.indexOf("°") + 1, cLat.indexOf("."))
-        latMin = latMin.size() < 2 ? "0" + latMin : latMin
         def latDecMin = cLat.substring(cLat.indexOf(".") + 1)
-        latDecMin = latDecMin.size() < 3 ? latDecMin + "0" + (latDecMin.size() < 2 ? "0" : "") : latDecMin
         def lonDir = cLon.substring(0,1)
         def lonDeg = cLon.substring(1, cLon.indexOf("°"))
-        lonDeg = lonDeg.size() < 3 ? "0" + (lonDeg.size() < 2 ? "0" : "") + lonDeg : lonDeg
         def lonMin = cLon.substring(cLon.indexOf("°") + 1, cLon.indexOf("."))
-        lonMin = lonMin.size() < 2 ? "0" + lonMin : lonMin
         def lonDecMin = cLon.substring(cLon.indexOf(".") + 1)
-        lonDecMin = lonDecMin.size() < 3 ? lonDecMin + "0" + (lonDecMin.size() < 2 ? "0" : "") : lonDecMin
 
         gcCoordsMap["latDir"] = latDir
         gcCoordsMap["latDeg"] = latDeg.toInteger()
@@ -51,30 +45,61 @@ class GcCache {
         gcCoordsMap["lonDecDeg"] = gcCoordsMap["lonMinDec"] / 60
         gcCoordsMap["lonSec"] = (gcCoordsMap["lonDecMin"].toFloat() / 1000 * 60).round(3)
 
-        def lat = gcCoordsMap["latDir"] + (gcCoordsMap["latDeg"] + "°" + gcCoordsMap["latMin"]) + "." + gcCoordsMap["latDecMin"] + "\'"
-        def lon = gcCoordsMap["lonDir"] + (gcCoordsMap["lonDeg"] + "°" + gcCoordsMap["lonMin"]) + "." + gcCoordsMap["lonDecMin"] + "\'"
+        def lat = gcCoordsMap["latDir"] + toTwoDigits(gcCoordsMap["latDeg"]) + "°" + toTwoDigits(gcCoordsMap["latMin"]) + "." + toThreeDigitsPost(gcCoordsMap["latDecMin"]) + "\'"
+        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]) + "°" + toTwoDigits(gcCoordsMap["lonMin"]) + "." + toThreeDigitsPost(gcCoordsMap["lonDecMin"]) + "\'"
         gcCoords = lat + lon
     }
 
     String getCoordsLat() {
-        def sep = gcCoords.findIndexOf{name -> name =~ /[EOW]/}
+        def sep = gcCoords.findIndexOf{name -> name =~ /[EW]/}
         return gcCoords.substring(0,sep)
     }
 
     String getCoordsLon() {
-        def sep = gcCoords.findIndexOf{name -> name =~ /[EOW]/}
+        def sep = gcCoords.findIndexOf{name -> name =~ /[EW]/}
         return gcCoords.substring(sep)
     }
 
     String getCoordsDecDegrees() {
-        def lat = gcCoordsMap["latDir"] + (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]) + "°"
-        def lon = gcCoordsMap["lonDir"] + (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"]) + "°"
+        def lat = gcCoordsMap["latDir"] + toTwoDigits(gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]) +  "°"
+        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]+ gcCoordsMap["lonDecDeg"]) +  "°"
         return lat + lon
     }
 
     String getCoordsMinSec() {
-        def lat = gcCoordsMap["latDir"] + gcCoordsMap["latDeg"] +  "°" + gcCoordsMap["latMin"] +  "\'" + gcCoordsMap["latSec"] +  "\""
-        def lon = gcCoordsMap["lonDir"] + gcCoordsMap["lonDeg"] +  "°" + gcCoordsMap["lonMin"] +  "\'" + gcCoordsMap["lonSec"] +  "\"" 
+        def lat = gcCoordsMap["latDir"] + toTwoDigits(gcCoordsMap["latDeg"]) +  "°" + toTwoDigits(gcCoordsMap["latMin"]) +  "\'" + toTwoDigits(gcCoordsMap["latSec"]) +  "\""
+        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]) +  "°" + toTwoDigits(gcCoordsMap["lonMin"]) +  "\'" + toTwoDigits(gcCoordsMap["lonSec"]) +  "\"" 
         return lat + lon
+    }
+
+    void coordsAddOffset(latOffset, lonOffset) {
+        def lat = gcCoordsMap["latMinDec"] + latOffset
+        def lon = gcCoordsMap["lonMinDec"] + lonOffset
+
+        gcCoordsMap["latMin"] = Math.floor(lat).toInteger()
+        gcCoordsMap["lonMin"] = Math.floor(lon).toInteger()
+
+        gcCoordsMap["latDecMin"] = Math.round((lat - gcCoordsMap["latMin"]) * 1000)
+        gcCoordsMap["lonDecMin"] = Math.round((lon - gcCoordsMap["lonMin"]) * 1000)
+
+        coordsUpdate()
+    }
+
+    void coordsAddOffsetInt(latOffset, lonOffset) {
+        def lat = latOffset / 1000
+        def lon = lonOffset / 1000
+        coordsAddOffset(lat, lon)
+    }
+
+    private String toTwoDigits(c) {
+        return c < 10 ? "0" + c : c + ""
+    }
+
+    private String toThreeDigitsPost(c) {
+        return c < 100 ? c + "0" + (c < 10 ? "0" : "") : c + ""
+    }
+
+    private String toThreeDigits(c) {
+        return c < 100 ? "0" + (c < 10 ? "0" : "") + c : c + ""
     }
 }
