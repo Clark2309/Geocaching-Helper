@@ -92,6 +92,6 @@ class GcCacheTest extends GroovyTestCase {
         float bear =  347.5
         myGc.coordsProjection(dist, bear)
         assert "N48°18.915\'" == myGc.getCoordsLat()
-        assert "E017°36.849\'" == myGc.getCoordsLon()
+        assert "E017°36.850\'" == myGc.getCoordsLon()
     }
 }

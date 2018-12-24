@@ -3,7 +3,12 @@
  */
 package de.gchelper
 
+import de.gchelper.filehelper.*
+
 class App {
+    static USER_HOME = System.getProperty('user.home')
+    static USER_DOWNLOADS = USER_HOME + File.separator + "Downloads"
+
     static void main(String[] args) {
     }
 }

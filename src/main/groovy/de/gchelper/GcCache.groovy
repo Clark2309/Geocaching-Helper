@@ -5,6 +5,7 @@ class GcCache {
     String gcTitle
     String gcDescription
     String gcCoords
+    String coordsDecDeg
     Map gcCoordsMap = [:]
 
     private void setGcCoords(c) {
@@ -29,22 +30,51 @@ class GcCache {
         gcCoordsMap["lonMin"] = lonMin.toInteger()
         gcCoordsMap["lonDecMin"] = lonDecMin.toInteger()
 
-        coordsUpdate()
+        coordsUpdate(true)
+    }
+
+    private void setCoordsDecDeg(c) {
+        def lat = c[0].toFloat()
+        def lon = c[1].toFloat()
+
+        gcCoordsMap["latDir"] = lat >= 0 ? "N" : "S"
+        gcCoordsMap["lonDir"] = lon >= 0 ? "E" : "W"
+
+        def latDeg = Math.floor(lat) 
+        def lonDeg = Math.floor(lon)
+        gcCoordsMap["latDeg"] = latDeg.toInteger()
+        gcCoordsMap["lonDeg"] = lonDeg.toInteger()
+        gcCoordsMap["latDecDeg"] = (lat - latDeg).toFloat()
+        gcCoordsMap["lonDecDeg"] = (lon - lonDeg).toFloat()
+
+        def latMin = (lat - latDeg).multiply(60)
+        def lonMin = (lon - lonDeg).multiply(60)
+        gcCoordsMap["latMin"] = Math.floor(latMin).toInteger()
+        gcCoordsMap["lonMin"] = Math.floor(lonMin).toInteger()
+
+        def latDecMin = (latMin - gcCoordsMap["latMin"]).round(3).multiply(1000)
+        def lonDecMin = (lonMin - gcCoordsMap["lonMin"]).round(3).multiply(1000)
+        gcCoordsMap["latDecMin"] = latDecMin.toInteger()
+        gcCoordsMap["lonDecMin"] = lonDecMin.toInteger()
+        coordsUpdate(false)
     }
 
     String getOverview() {
         return "Cache " + gcCode + " (" + gcTitle + ") at " + gcCoords
     }
 
-    void coordsUpdate() {
+    void coordsUpdate(withDecDeg) {
         // recalculate other formats
         // Must be calles after updating the degrees, minutes and minute decimals
-        gcCoordsMap["latMinDec"] = gcCoordsMap["latMin"].toFloat() + gcCoordsMap["latDecMin"].toFloat() / 1000
-        gcCoordsMap["latDecDeg"] = gcCoordsMap["latMinDec"] / 60
-        gcCoordsMap["latSec"] = (gcCoordsMap["latDecMin"].toFloat() / 1000 * 60).round(3)
-        gcCoordsMap["lonMinDec"] = gcCoordsMap["lonMin"].toFloat() + gcCoordsMap["lonDecMin"].toFloat() / 1000
-        gcCoordsMap["lonDecDeg"] = gcCoordsMap["lonMinDec"] / 60
-        gcCoordsMap["lonSec"] = (gcCoordsMap["lonDecMin"].toFloat() / 1000 * 60).round(3)
+        gcCoordsMap["latMinDec"] = gcCoordsMap["latMin"].toFloat() + gcCoordsMap["latDecMin"].toFloat().div(1000)
+        gcCoordsMap["latSec"] = (gcCoordsMap["latDecMin"].toFloat().div(1000).multiply(60)).round(3)
+        gcCoordsMap["lonMinDec"] = gcCoordsMap["lonMin"].toFloat() + gcCoordsMap["lonDecMin"].toFloat().div(1000)
+        gcCoordsMap["lonSec"] = (gcCoordsMap["lonDecMin"].toFloat().div(1000).multiply(60)).round(3)
+
+        if (withDecDeg) {
+            gcCoordsMap["latDecDeg"] = gcCoordsMap["latMinDec"].div(60)
+            gcCoordsMap["lonDecDeg"] = gcCoordsMap["lonMinDec"].div(60)
+        }
 
         def lat = gcCoordsMap["latDir"] + toTwoDigits(gcCoordsMap["latDeg"]) + "°" + toTwoDigits(gcCoordsMap["latMin"]) + "." + toThreeDigitsPost(gcCoordsMap["latDecMin"]) + "\'"
         def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]) + "°" + toTwoDigits(gcCoordsMap["lonMin"]) + "." + toThreeDigitsPost(gcCoordsMap["lonDecMin"]) + "\'"
@@ -65,7 +95,7 @@ class GcCache {
 
     String getCoordsDecDegrees() {
         def lat = gcCoordsMap["latDir"] + toTwoDigits(gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]) +  "°"
-        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]+ gcCoordsMap["lonDecDeg"]) +  "°"
+        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"]) +  "°"
         return lat + lon
     }
 
@@ -82,15 +112,15 @@ class GcCache {
         gcCoordsMap["latMin"] = Math.floor(lat).toInteger()
         gcCoordsMap["lonMin"] = Math.floor(lon).toInteger()
 
-        gcCoordsMap["latDecMin"] = Math.round((lat - gcCoordsMap["latMin"]) * 1000)
-        gcCoordsMap["lonDecMin"] = Math.round((lon - gcCoordsMap["lonMin"]) * 1000)
+        gcCoordsMap["latDecMin"] = (lat - gcCoordsMap["latMin"]).round(3).multiply(1000).toInteger()
+        gcCoordsMap["lonDecMin"] = (lon - gcCoordsMap["lonMin"]).round(3).multiply(1000).toInteger()
 
-        coordsUpdate()
+        coordsUpdate(true)
     }
 
     void coordsAddOffsetInt(latOffset, lonOffset) {
-        def lat = latOffset / 1000
-        def lon = lonOffset / 1000
+        def lat = latOffset.div(1000)
+        def lon = lonOffset.div(1000)
         coordsAddOffset(lat, lon)
     }
 
@@ -111,16 +141,14 @@ class GcCache {
         gcCoordsMap["latDeg"] = Math.floor(180 / Math.PI * latCalc).toInteger()
         float latMin = ((180 / Math.PI * latCalc) - gcCoordsMap["latDeg"]) * 60
         gcCoordsMap["latMin"] = Math.floor(latMin).toInteger()
-        latMin *= 1000
-        gcCoordsMap["latDecMin"] = Math.floor(latMin.mod(1000)).toInteger()
+        gcCoordsMap["latDecMin"] = (latMin - gcCoordsMap["latMin"]).round(3).multiply(1000).toInteger()
 
         gcCoordsMap["lonDeg"] = Math.floor(180 / Math.PI * lonCalc).toInteger()
         float lonMin = ((180 / Math.PI * lonCalc) - gcCoordsMap["lonDeg"]) * 60
         gcCoordsMap["lonMin"] = Math.floor(lonMin).toInteger()
-        lonMin *= 1000
-        gcCoordsMap["lonDecMin"] = Math.floor(lonMin.mod(1000)).toInteger()
+        gcCoordsMap["lonDecMin"] = (lonMin - gcCoordsMap["lonMin"]).round(3).multiply(1000).toInteger()
 
-        coordsUpdate()
+        coordsUpdate(true)
     }
 
     private String toTwoDigits(c) {
