@@ -1,10 +1,20 @@
 package de.gchelper
 
 class GcCache {
+    static TYPE = "Geocache"
+    static TRADI = "Traditional Cache"
+    static MYST = "Unknown Cache"
+    static MULTI = "Multi-cache"
+    static EVENT = "Event Cache"
+
     String gcCode
     String gcTitle
     String gcDescription
     String gcCoords
+    String gcType
+    String gcContainer
+    String gcDiff
+    String gcTerr
     String coordsDecDeg
     Map gcCoordsMap = [:]
 
@@ -60,7 +70,7 @@ class GcCache {
     }
 
     String getOverview() {
-        return "Cache " + gcCode + " (" + gcTitle + ") at " + gcCoords
+        return gcCode + " - (" + gcTitle + ") at " + gcCoords + " (Size: " + gcContainer + ", D/T: " + gcDiff + "/" + gcTerr + ", Typ: " + gcType + ")"
     }
 
     void coordsUpdate(withDecDeg) {
@@ -87,10 +97,18 @@ class GcCache {
         return gcCoords.substring(0,sep)
     }
 
+    String getCoordsLatDeg() {
+        return gcCoordsMap["latDir"] == "N" ? (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]).toString() : "-" + (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"])      
+    }
+
     // provides Longitude of actual coords
     String getCoordsLon() {
         def sep = gcCoords.findIndexOf{name -> name =~ /[EW]/}
         return gcCoords.substring(sep)
+    }
+
+    String getCoordsLonDeg() {
+        return gcCoordsMap["lonDir"] == "E" ? (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"]).toString() : "-" + (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"])        
     }
 
     String getCoordsDecDegrees() {
