@@ -22,15 +22,20 @@ class GpxFile {
         def caches = []
 
         xmlContent.wpt.each {
-            caches << new GcCache(  gcCode: it.name.text(), 
-                                    gcTitle: it."groundspeak:cache"."groundspeak:name".text(), 
-                                    gcDescription: it."groundspeak:cache"."groundspeak:long_description".text(), 
-                                    coordsDecDeg: [it.@lat, it.@lon],
-                                    gcType: it."groundspeak:cache"."groundspeak:type".text(),
-                                    gcContainer: it."groundspeak:cache"."groundspeak:container".text(),
-                                    gcDiff: it."groundspeak:cache"."groundspeak:difficulty".text(),
-                                    gcTerr: it."groundspeak:cache"."groundspeak:terrain".text())
+            if (it.name.text().startsWith("GC")) {
+                caches << new GcCache(  gcCode: it.name.text(), 
+                                        gcTitle: it."groundspeak:cache"."groundspeak:name".text(), 
+                                        gcDescription: it."groundspeak:cache"."groundspeak:long_description".text(), 
+                                        coordsDecDeg: [it.@lat, it.@lon],
+                                        gcType: it."groundspeak:cache"."groundspeak:type".text(),
+                                        gcContainer: it."groundspeak:cache"."groundspeak:container".text(),
+                                        gcDiff: it."groundspeak:cache"."groundspeak:difficulty".text(),
+                                        gcTerr: it."groundspeak:cache"."groundspeak:terrain".text())
+            } else {
+                // println "Skipping " + it.name.text() + " - " + it."groundspeak:cache"."groundspeak:name".text()
+            }
         }
+        println "Count caches: " + caches.size()
         return caches
     }
 
