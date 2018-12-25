@@ -36,11 +36,8 @@ Calculates an offset of the original coordinates with given integer values
 #### coordsProjection(dist, bear)
 Calculates a projection from original coordinates with given distance and bearance
 
-### Functions to come
-* convert gpx to csv
-* make calculations on every csv value
-* get cache information from web site (perhaps)
-* build gpx with corrected coordiantes for import in L4C (hopefully)
-
 ### GPX-File
 With this class it's possible to read from gpx files, modify some values and export the the results into a new gpx file that can be imported in e.g. L4C.
+
+### Functions to come
+* get cache information from web site (perhaps)
