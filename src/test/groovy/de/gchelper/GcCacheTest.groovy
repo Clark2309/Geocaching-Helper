@@ -8,7 +8,7 @@ class GcCacheTest extends GroovyTestCase {
     void testInitGc() {
         def myGc = new GcCache(gcCode: "GC123", gcTitle: "mein Titel", gcDescription: "Desc", gcCoords: "N48°12.345 E011°12.345")
 
-        assert "Cache GC123 (mein Titel) at N48°12.345\'E011°12.345\'" == myGc.getOverview()
+        assert "GC123 - (mein Titel) at N48°12.345\' E011°12.345\' (Size: null, D/T: null/null, Typ: null)" == myGc.getOverview()
     }
 
     void testGetCoordsLat() {
@@ -92,6 +92,6 @@ class GcCacheTest extends GroovyTestCase {
         float bear =  347.5
         myGc.coordsProjection(dist, bear)
         assert "N48°18.915\'" == myGc.getCoordsLat()
-        assert "E017°36.849\'" == myGc.getCoordsLon()
+        assert "E017°36.850\'" == myGc.getCoordsLon()
     }
 }
