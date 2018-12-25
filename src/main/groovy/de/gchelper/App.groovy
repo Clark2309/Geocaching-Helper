@@ -10,5 +10,31 @@ class App {
     static USER_DOWNLOADS = USER_HOME + File.separator + "Downloads"
 
     static void main(String[] args) {
+        def myGpxFilePath = USER_DOWNLOADS + File.separator + "GC5NJB0.gpx"
+        def gpx = new GpxFile(myGpxFilePath)
+
+        gpx.getCaches().each{
+            println it.getOverview()
+            println "Changing coordinates from " + it.gcCoords
+            println "Offset N " + getOffsetLatFbptK(it.gcDescription) + ", E " + getOffsetLonFbptK(it.gcDescription)
+            it.coordsAddOffset(getOffsetLatFbptK(it.gcDescription), getOffsetLonFbptK(it.gcDescription))
+            println "New coordinates " + it.gcCoords
+        }
+
+//        gpx.getGpxFile(gpx.getCaches(), USER_DOWNLOADS + File.separator + "myNewCacheFile.gpx")
+    }
+
+    // FBPT K
+    static getOffsetLatFbptK(str) {
+        def iFrom = str.indexOf("<b>", str.indexOf("(Startcoords Nord)"))
+        def iTo = str.indexOf("<", iFrom + 3)
+        return str.substring(iFrom + 3, iTo).replaceAll('[.]', "").replaceAll(" ", "").toFloat().div(1000)
+    }
+
+    // FBPT K
+    static getOffsetLonFbptK(str) {
+        def iFrom = str.indexOf("<b>", str.indexOf("(Startcoords Ost/East)"))
+        def iTo = str.indexOf("<", iFrom + 3)
+        return str.substring(iFrom + 3, iTo).replaceAll("[.]", "").replaceAll(" ", "").toFloat().div(1000)
     }
 }
