@@ -1,24 +1,16 @@
-package de.gchelper
+package de.gchelper.cachedata
 
-class GcCache {
-    static TYPE = "Geocache"
-    static TRADI = "Traditional Cache"
-    static MYST = "Unknown Cache"
-    static MULTI = "Multi-cache"
-    static EVENT = "Event Cache"
+abstract class AbstractWaypoint {
 
+    String gcKey
     String gcCode
-    String gcTitle
     String gcDescription
     String gcCoords
-    String gcType
-    String gcContainer
-    String gcDiff
-    String gcTerr
-    String coordsDecDeg
+    String gcSym
+    String gcCoordsDecDeg
     Map gcCoordsMap = [:]
 
-    private void setGcCoords(c) {
+    protected void setGcCoords(c) {
         c = c.replaceAll(" ", "").replaceAll(",", ".").replaceAll("O", "E").replaceAll("\'", "")
         def cLat = c.substring(0,c.findIndexOf{name -> name =~ /[EW]/})
         def cLon = c.substring(c.findIndexOf{name -> name =~ /[EW]/})
@@ -43,7 +35,7 @@ class GcCache {
         coordsUpdate(true)
     }
 
-    private void setCoordsDecDeg(c) {
+    protected void setGcCoordsDecDeg(c) {
         def lat = c[0].toFloat()
         def lon = c[1].toFloat()
 
@@ -68,10 +60,6 @@ class GcCache {
         gcCoordsMap["lonDecMin"] = lonDecMin.toInteger()
 
         coordsUpdate(false)
-    }
-
-    String getOverview() {
-        return gcCode + " - (" + gcTitle + ") at " + gcCoords + " (Size: " + gcContainer + ", D/T: " + gcDiff + "/" + gcTerr + ", Typ: " + gcType + ")"
     }
 
     void coordsUpdate(withDecDeg) {

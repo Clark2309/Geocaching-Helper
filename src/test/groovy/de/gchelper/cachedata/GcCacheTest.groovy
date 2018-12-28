@@ -1,4 +1,4 @@
-package de.gchelper
+package de.gchelper.cachedata
 
 import junit.framework.TestCase
 import groovy.util.GroovyTestCase

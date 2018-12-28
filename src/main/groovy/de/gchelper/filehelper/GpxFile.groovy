@@ -1,6 +1,6 @@
 package de.gchelper.filehelper
 
-import de.gchelper.*
+import de.gchelper.cachedata.*
 import groovy.xml.MarkupBuilder
 
 class GpxFile {
@@ -24,6 +24,7 @@ class GpxFile {
         xmlContent.wpt.each {
             if (it.name.text().startsWith("GC")) {
                 caches << new GcCache(  gcCode: it.name.text(), 
+                                        gcKey: it.name.text().substring(2)
                                         gcTitle: it."groundspeak:cache"."groundspeak:name".text(), 
                                         gcDescription: it."groundspeak:cache"."groundspeak:long_description".text(), 
                                         coordsDecDeg: [it.@lat, it.@lon],

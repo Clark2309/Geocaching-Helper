@@ -1,6 +1,7 @@
 package de.gchelper
 
 import de.gchelper.filehelper.*
+import de.gchelper.cachedata.*
 
 class App {
     static USER_HOME = System.getProperty('user.home')
