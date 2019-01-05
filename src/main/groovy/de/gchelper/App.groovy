@@ -15,11 +15,13 @@ class App {
         gpx.getCaches().eachWithIndex { it, i ->
             println "i: " + i
             println it.getOverview()
-            // println it.gcDescription
+//            println it.gcDescription
             println "Changing coordinates from " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
             println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()
-            println "Offset N " + getOffsetLatFbptAbc(it.gcDescription) + ", E " + getOffsetLonFbptAbc(it.gcDescription)
-            it.coordsAddOffset(getOffsetLatFbptAbc(it.gcDescription), getOffsetLonFbptAbc(it.gcDescription))
+            println "Bearing " + getBearExped(it.gcDescription) + ", Distance " + getDistExped(it.gcDescription)
+            it.coordsProjection(getDistExped(it.gcDescription), getBearExped(it.gcDescription))
+//            println "Offset N " + getOffsetLatFbptAbc(it.gcDescription) + ", E " + getOffsetLonFbptAbc(it.gcDescription)
+//            it.coordsAddOffset(getOffsetLatFbptAbc(it.gcDescription), getOffsetLonFbptAbc(it.gcDescription))
             println "New coordinates " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
             println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()
             caches << it
@@ -28,29 +30,43 @@ class App {
         gpx.getGpxFile((GcCache[])caches, USER_DOWNLOADS + File.separator + "myNewCacheFile.gpx")
     }
 
+    // Expedition
+    static getBearExped(str) {
+        def iFrom = str.indexOf(">", str.indexOf("Grad") - 10)
+        def iTo = str.indexOf("Grad", iFrom)
+        return str.substring(iFrom + 1, iTo).replaceAll('[.]', "").replaceAll(" ", "").toInteger()
+    }
+
+    // Expedition
+    static getDistExped(str) {
+        def iFrom = str.indexOf("Grad")
+        def iTo = str.indexOf("Meter", iFrom)
+        return str.substring(iFrom + 5, iTo).replaceAll("[.]", "").replaceAll(" ", "").toInteger()
+    }
+
     // ABC
-    static getOffsetLatFbptAbc(str) {
+    static getOffsetLatAbc(str) {
         def iFrom = str.indexOf(">N")
         def iTo = str.indexOf("<", iFrom + 2)
         return str.substring(iFrom + 2, iTo).replaceAll('[.]', "").replaceAll(/\p{Z}/, "").replaceAll("&nbsp;", "").toFloat().div(1000)
     }
 
     // ABC
-    static getOffsetLonFbptAbc(str) {
+    static getOffsetLonAbc(str) {
         def iFrom = str.indexOf("O", str.indexOf(">N"))
         def iTo = str.indexOf("<", iFrom)
         return str.substring(iFrom + 1, iTo).replaceAll("[.]", "").replaceAll(/\p{Z}/, "").replaceAll("&nbsp;", "").toFloat().div(1000)
     }
 
     // Staufertour
-    static getOffsetLatFbptStaufer(str) {
+    static getOffsetLatStaufer(str) {
         def iFrom = str.indexOf("N", str.indexOf("#"))
         def iTo = str.indexOf("E", iFrom)
         return str.substring(iFrom + 1, iTo).replaceAll('[.]', "").replaceAll(" ", "").toFloat().div(1000)
     }
 
     // Staufertour
-    static getOffsetLonFbptStaufer(str) {
+    static getOffsetLonStaufer(str) {
         def iFrom = str.indexOf("E", str.indexOf("#"))
         def iTo = str.indexOf("<", iFrom)
         return str.substring(iFrom + 1, iTo).replaceAll("[.]", "").replaceAll(" ", "").toFloat().div(1000)
