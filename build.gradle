@@ -6,6 +6,17 @@
  * user guide available at https://docs.gradle.org/5.0/userguide/tutorial_groovy_projects.html
  */
 
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath(
+                'org.unbroken-dome.gradle-plugins:gradle-testsets-plugin:1.4.2'
+        )
+    }
+}
+
 plugins {
     // Apply the groovy plugin to add support for Groovy
     id 'groovy'
@@ -23,9 +34,19 @@ repositories {
 dependencies {
     // Use the latest Groovy version for building this library
     implementation 'org.codehaus.groovy:groovy-all:2.5.4'
+    implementation group: 'com.opencsv', name: 'opencsv', version: '4.4'
 
     // Use the awesome Spock testing and specification framework
     testImplementation 'org.spockframework:spock-core:1.2-groovy-2.5'
+}
+
+test {
+    useJUnit {
+        includeCategories 'de.gchelper.cachedata.GcCacheTest'
+    }
+    testLogging {
+        showStandardStreams = true
+    }
 }
 
 // Define the main class for the application

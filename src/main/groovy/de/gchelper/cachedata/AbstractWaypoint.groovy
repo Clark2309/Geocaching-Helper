@@ -1,24 +1,17 @@
-package de.gchelper
+package de.gchelper.cachedata
 
-class GcCache {
-    static TYPE = "Geocache"
-    static TRADI = "Traditional Cache"
-    static MYST = "Unknown Cache"
-    static MULTI = "Multi-cache"
-    static EVENT = "Event Cache"
+abstract class AbstractWaypoint {
 
+    String gcKey
     String gcCode
-    String gcTitle
     String gcDescription
     String gcCoords
-    String gcType
-    String gcContainer
-    String gcDiff
-    String gcTerr
-    String coordsDecDeg
+    String gcSym
+    String gcCoordsDecDeg
     Map gcCoordsMap = [:]
 
-    private void setGcCoords(c) {
+    // Beispiel "N50° 13.079 E011° 59.573"
+    protected void setGcCoordsDegDecMin(c) {
         c = c.replaceAll(" ", "").replaceAll(",", ".").replaceAll("O", "E").replaceAll("\'", "")
         def cLat = c.substring(0,c.findIndexOf{name -> name =~ /[EW]/})
         def cLon = c.substring(c.findIndexOf{name -> name =~ /[EW]/})
@@ -34,23 +27,24 @@ class GcCache {
         gcCoordsMap["latDir"] = latDir
         gcCoordsMap["latDeg"] = latDeg.toInteger()
         gcCoordsMap["latMin"] = latMin.toInteger()
-        gcCoordsMap["latDecMin"] = toThreeDigitsPost(latDecMin.toInteger())
+        gcCoordsMap["latDecMin"] = latDecMin.toInteger()
         gcCoordsMap["lonDir"] = lonDir
         gcCoordsMap["lonDeg"] = lonDeg.toInteger()
         gcCoordsMap["lonMin"] = lonMin.toInteger()
-        gcCoordsMap["lonDecMin"] = toThreeDigitsPost(lonDecMin.toInteger())
+        gcCoordsMap["lonDecMin"] = lonDecMin.toInteger()
 
         coordsUpdate(true)
     }
 
-    private void setCoordsDecDeg(c) {
+    // Beispiel: ["48.879417", "13.56185"]
+    protected void setGcCoordsDecDeg(c) {
         def lat = c[0].toFloat()
         def lon = c[1].toFloat()
 
         gcCoordsMap["latDir"] = lat >= 0 ? "N" : "S"
         gcCoordsMap["lonDir"] = lon >= 0 ? "E" : "W"
 
-        def latDeg = Math.floor(lat) 
+        def latDeg = Math.floor(lat)
         def lonDeg = Math.floor(lon)
         gcCoordsMap["latDeg"] = latDeg.toInteger()
         gcCoordsMap["lonDeg"] = lonDeg.toInteger()
@@ -70,13 +64,9 @@ class GcCache {
         coordsUpdate(false)
     }
 
-    String getOverview() {
-        return gcCode + " - (" + gcTitle + ") at " + gcCoords + " (Size: " + gcContainer + ", D/T: " + gcDiff + "/" + gcTerr + ", Typ: " + gcType + ")"
-    }
-
     void coordsUpdate(withDecDeg) {
         // recalculate other formats
-        // Must be calles after updating the degrees, minutes and minute decimals
+        // Must be called after updating the degrees, minutes and minute decimals
         gcCoordsMap["latMinDec"] = gcCoordsMap["latMin"].toFloat() + gcCoordsMap["latDecMin"].toFloat().div(1000)
         gcCoordsMap["latSec"] = (gcCoordsMap["latDecMin"].toFloat().div(1000).multiply(60)).round(3)
         gcCoordsMap["lonMinDec"] = gcCoordsMap["lonMin"].toFloat() + gcCoordsMap["lonDecMin"].toFloat().div(1000)
@@ -99,7 +89,7 @@ class GcCache {
     }
 
     String getCoordsLatDeg() {
-        return gcCoordsMap["latDir"] == "N" ? (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]).toString() : "-" + (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"])      
+        return gcCoordsMap["latDir"] == "N" ? (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]).toString() : "-" + (gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"])
     }
 
     // provides Longitude of actual coords
@@ -109,7 +99,7 @@ class GcCache {
     }
 
     String getCoordsLonDeg() {
-        return gcCoordsMap["lonDir"] == "E" ? (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"]).toString() : "-" + (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"])        
+        return gcCoordsMap["lonDir"] == "E" ? (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"]).toString() : "-" + (gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"])
     }
 
     String getCoordsDecDegrees() {
@@ -120,7 +110,7 @@ class GcCache {
 
     String getCoordsMinSec() {
         def lat = gcCoordsMap["latDir"] + toTwoDigits(gcCoordsMap["latDeg"]) +  "°" + toTwoDigits(gcCoordsMap["latMin"]) +  "\'" + toTwoDigits(gcCoordsMap["latSec"]) +  "\""
-        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]) +  "°" + toTwoDigits(gcCoordsMap["lonMin"]) +  "\'" + toTwoDigits(gcCoordsMap["lonSec"]) +  "\"" 
+        def lon = gcCoordsMap["lonDir"] + toThreeDigits(gcCoordsMap["lonDeg"]) +  "°" + toTwoDigits(gcCoordsMap["lonMin"]) +  "\'" + toTwoDigits(gcCoordsMap["lonSec"]) +  "\""
         return lat + " " + lon
     }
 
@@ -145,15 +135,15 @@ class GcCache {
 
     void coordsProjection(dist, bear) {
         def lat = gcCoordsMap["latDeg"] + gcCoordsMap["latDecDeg"]
-        def lon = gcCoordsMap["lonDeg"]+ gcCoordsMap["lonDecDeg"]
+        def lon = gcCoordsMap["lonDeg"] + gcCoordsMap["lonDecDeg"]
 
         def latRad = Math.PI / 180 * lat
         def lonRad = Math.PI / 180 * lon
 
         bear = Math.PI / 180 * bear
         dist = ( Math.PI * dist ) / ( 180 * 60 * 1852)
-        
-        def latCalc = Math.asin(Math.sin(latRad) * Math.cos(dist) + Math.cos(latRad) * Math.sin(dist) * Math.cos(bear))        
+
+        def latCalc = Math.asin(Math.sin(latRad) * Math.cos(dist) + Math.cos(latRad) * Math.sin(dist) * Math.cos(bear))
         def polarRad = -1 * Math.atan2(Math.sin(bear) * Math.sin(dist) * Math.cos(latRad), Math.cos(dist) - Math.sin(latRad) * Math.sin(latCalc))
         def lonCalc = (lonRad - polarRad + Math.PI) - Math.floor((lonRad - polarRad + Math.PI) / (2 * Math.PI)) - Math.PI
 
@@ -174,11 +164,15 @@ class GcCache {
         return c < 10 ? "0" + c : c + ""
     }
 
-    private Integer toThreeDigitsPost(c) {
-        return c < 100 ? c * 10 * (c < 10 ? 10 : 1) : c
-    }
-
     private String toThreeDigits(c) {
         return c < 100 ? "0" + (c < 10 ? "0" : "") + c : c + ""
+    }
+
+    public String getOriginalCoordsWpName() {
+        return ("00" + gcCode.substring(2)).trim()
+    }
+
+    public String getCorrectedCoordsWpName() {
+        return ("02" + gcCode.substring(2)).trim()
     }
 }
