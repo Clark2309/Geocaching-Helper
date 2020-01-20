@@ -8,26 +8,41 @@ class App {
     static USER_DOWNLOADS = USER_HOME + File.separator + "Downloads"
 
     static void main(String[] args) {
-        def myGpxFilePath = USER_DOWNLOADS + File.separator + "caches.gpx"
-        def gpx = new GpxFile(myGpxFilePath)
         def caches = []
+        def myGpxFilePath = USER_DOWNLOADS + File.separator + "caches.gpx"
+        def myCsvFile = USER_DOWNLOADS + File.separator + "caches.csv"
+        myGpxFilePath = null
 
-        gpx.getCaches().eachWithIndex { it, i ->
-            println "i: " + i
-            println it.getOverview()
+        if (myCsvFile) {
+            def csv = new CsvFile(myCsvFile, false)
+            def outFile = new File(USER_DOWNLOADS + File.separator + "myNewCacheFileFromCsv.gpx")
+            outFile.delete()
+            outFile << csv.getCaches()
+            csv.getCaches().eachWithIndex { it, i ->
+                println "i: " + i
+                println it.getOverview()
+                caches << it
+            }
+            new GpxFile().getGpxFile((GcCache[])caches, USER_DOWNLOADS + File.separator + "myNewCacheFileFromCsv.gpx")
+        }
+        if (myGpxFilePath) {
+            def gpx = new GpxFile(myGpxFilePath)
+            gpx.getCaches().eachWithIndex { it, i ->
+                println "i: " + i
+                println it.getOverview()
 //            println it.gcDescription
-            println "Changing coordinates from " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
-            println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()
-            println "Bearing " + getBearExped(it.gcDescription) + ", Distance " + getDistExped(it.gcDescription)
-            it.coordsProjection(getDistExped(it.gcDescription), getBearExped(it.gcDescription))
+//                println "Changing coordinates from " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
+//                println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()
+//                println "Bearing " + getBearExped(it.gcDescription) + ", Distance " + getDistExped(it.gcDescription)
+//                it.coordsProjection(getDistExped(it.gcDescription), getBearExped(it.gcDescription))
 //            println "Offset N " + getOffsetLatFbptAbc(it.gcDescription) + ", E " + getOffsetLonFbptAbc(it.gcDescription)
 //            it.coordsAddOffset(getOffsetLatFbptAbc(it.gcDescription), getOffsetLonFbptAbc(it.gcDescription))
-            println "New coordinates " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
-            println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()
-            caches << it
+//                println "New coordinates " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
+//                println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()
+                caches << it
+            }
+//            gpx.getGpxFile((GcCache[])caches, USER_DOWNLOADS + File.separator + "myNewCacheFile.gpx")
         }
-
-        gpx.getGpxFile((GcCache[])caches, USER_DOWNLOADS + File.separator + "myNewCacheFile.gpx")
     }
 
     // Expedition

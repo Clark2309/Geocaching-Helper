@@ -4,9 +4,9 @@ import junit.framework.TestCase
 import groovy.util.GroovyTestCase
 
 class GcCacheTest extends GroovyTestCase {
-    
+
     void testInitGc() {
-        def myGc = new GcCache(gcCode: "GC123", gcTitle: "mein Titel", gcDescription: "Desc", gcCoords: "N48°12.345 E011°12.345")
+        def myGc = new GcCache(gcCode: "GC123", gcTitle: "mein Titel", gcDescription: "Desc", gcCoords: "N48°12.045 E011°12.345")
 
         assert "GC123 - (mein Titel) at N48°12.345\' E011°12.345\' (Size: null, D/T: null/null, Typ: null)" == myGc.getOverview()
     }
