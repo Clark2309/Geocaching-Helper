@@ -11,25 +11,23 @@ class App {
         def caches = []
         def myGpxFilePath = USER_DOWNLOADS + File.separator + "caches.gpx"
         def myCsvFile = USER_DOWNLOADS + File.separator + "caches.csv"
+        def myCsvOutFile = USER_DOWNLOADS + File.separator + "myNewCacheFileFromCsv.gpx"
         myGpxFilePath = null
 
         if (myCsvFile) {
             def csv = new CsvFile(myCsvFile, false)
-            def outFile = new File(USER_DOWNLOADS + File.separator + "myNewCacheFileFromCsv.gpx")
-            outFile.delete()
-            outFile << csv.getCaches()
-            csv.getCaches().eachWithIndex { it, i ->
+            caches = csv.caches
+            caches.eachWithIndex { it, i ->
                 println "i: " + i
-                println it.getOverview()
-                caches << it
+                println it.overview
             }
-            new GpxFile().getGpxFile((GcCache[])caches, USER_DOWNLOADS + File.separator + "myNewCacheFileFromCsv.gpx")
+            new GpxFile().getGpxFile((GcCache[])caches, myCsvOutFile)
         }
         if (myGpxFilePath) {
             def gpx = new GpxFile(myGpxFilePath)
-            gpx.getCaches().eachWithIndex { it, i ->
+            gpx.caches.eachWithIndex { it, i ->
                 println "i: " + i
-                println it.getOverview()
+                println it.overview
 //            println it.gcDescription
 //                println "Changing coordinates from " + it.gcCoords + " (" + it.getCoordsDecDegrees() + ")"
 //                println it.getCoordsLatDeg() + ", " + it.getCoordsLonDeg()

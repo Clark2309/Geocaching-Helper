@@ -18,17 +18,17 @@ class CsvFile {
         CSVParser parser = new CSVParserBuilder()
                 .withIgnoreQuotations(true)
                 .withSeparator(separator)
-                .build();
+                .build()
 
         CSVReader csvReader = new CSVReaderBuilder(csvFileReader)
                 .withSkipLines(skipLines)
                 .withCSVParser(parser)
-                .build();
+                .build()
 
-        content = csvReader.readAll();
+        content = csvReader.readAll()
 
-        csvReader.close();
-        csvFileReader.close();
+        csvReader.close()
+        csvFileReader.close()
     }
 
     GcCache[] getCaches() {
@@ -37,7 +37,7 @@ class CsvFile {
         List<String[]> cacheData = content[1..<content.size]
 
         cacheData.each {
-            def gcCode = it[colNames.indexOf("gcCode")].toUpperCase()
+            def gcCode = it[colNames.indexOf("gcCode")].toUpperCase().trim()
             println("Code: " + gcCode)
             def gcCorrCoords = it[colNames.indexOf("gcCorrCoords")]
             caches << new GcCache(gcCode: gcCode,

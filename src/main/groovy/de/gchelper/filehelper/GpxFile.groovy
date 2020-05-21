@@ -65,11 +65,11 @@ class GpxFile {
                     'keywords'('cache, geocache, groundspeak')
                     caches.each { cache ->
                         // Define Coords for Main Object. Only if corrected L4C recognize them as corrected
-                        def latCache = cache.getCoordsLatDeg()
-                        def lonCache = cache.getCoordsLonDeg()
+                        def latCache = cache.coordsLatDeg
+                        def lonCache = cache.coordsLonDeg
                         if (cache.gcCorrectedCoordinates) {
-                            latCache = cache.gcCorrectedCoordinates.getCoordsLatDeg()
-                            lonCache = cache.gcCorrectedCoordinates.getCoordsLonDeg()
+                            latCache = cache.gcCorrectedCoordinates.coordsLatDeg
+                            lonCache = cache.gcCorrectedCoordinates.coordsLonDeg
                         }
                         'wpt'(lat: latCache, lon: lonCache) {
                             'name'(cache.gcCode.trim())
@@ -78,7 +78,7 @@ class GpxFile {
                             'type'('Geocache|' + cache.gcType)
                             'groundspeak:cache'('xmlns:groundspeak': "http://www.groundspeak.com/cache/1/0/1") {
                                 'groundspeak:name'(cache.gcTitle)
-                                'groundspeak:long_description'(cache.gcDescription)
+                                'groundspeak:long_description'(html: "True", cache.gcDescription)
                                 'groundspeak:type'(cache.gcType)
                                 'groundspeak:container'(cache.gcContainer)
                                 'groundspeak:difficulty'(cache.gcDiff)
@@ -86,8 +86,8 @@ class GpxFile {
                             }
                         }
                         if (cache.gcCorrectedCoordinates) {
-                            'wpt'(lat: cache.getCoordsLatDeg(), lon: cache.getCoordsLonDeg()) {
-                                'name'(cache.getOriginalCoordsWpName())
+                            'wpt'(lat: cache.coordsLatDeg, lon: cache.coordsLonDeg) {
+                                'name'(cache.originalCoordsWpName)
                                 'cmt'('')
                                 'desc'('Ursprüngliche Koordinaten')
                                 'sym'('Original Coordinates')
@@ -97,7 +97,7 @@ class GpxFile {
                                 }
                             }
                             'wpt'(lat: latCache, lon: lonCache) {
-                                'name'(cache.getCorrectedCoordsWpName())
+                                'name'(cache.correctedCoordsWpName)
                                 'cmt'('')
                                 'desc'('Final')
                                 'sym'('Final Location')
